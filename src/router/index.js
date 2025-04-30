@@ -1,6 +1,5 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router'
-import SymptomInput from '@/components/SymptomInput.vue'
+import SymptomInput   from '@/components/SymptomInput.vue'
 import ResultDisplay  from '@/components/ResultDisplay.vue'
 
 const routes = [
@@ -8,9 +7,7 @@ const routes = [
   { path: '/results', name: 'Results', component: ResultDisplay }
 ]
 
-const router = createRouter({
+export default createRouter({
   history: createWebHistory(),
   routes
 })
-
-export default router

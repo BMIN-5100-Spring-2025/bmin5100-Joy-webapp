@@ -1,275 +1,120 @@
 <template>
-  <div class="symptom-input-container professional">
-    <div class="prompt-card elevated">
-      <svg class="icon info-icon" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-4h2v-6h-2v6zm0-8h2V7h-2v2z"/>
-      </svg>
-      <h3 class="prompt-title primary-text">Tell Us About Your Symptoms</h3>
-      <p class="prompt-description secondary-text">Please provide a detailed description of what you're feeling. The more specific you are, the better we can understand.</p>
-    </div>
-    <div
-      class="input-box focused-style"
-      @click="focusInput"
-    >
+  <div class="input-page">
+    <div class="card">
+      <h1 class="title">Diesease Predictor</h1>
+      <p class="subtitle">Describe your symptoms below</p>
       <textarea
-        ref="symptomInput"
         v-model="inputText"
-        placeholder=""
-        id="symptomInput"
+        placeholder="e.g. Fever, cough, headache..."
+        rows="5"
       ></textarea>
-      <label
-        for="symptomInput"
-        class="input-label"
-        :class="{ 'has-text': inputText }"
-      >Describe your symptoms...</label>
-    </div>
-    <div class="hint-area">
-      <small class="hint-text subtle">Example: "Persistent cough with chest tightness, especially at night."</small>
-    </div>
-    <button class="submit-button primary-button" @click="generateJson">Submit Symptoms</button>
-    <div class="additional-info">
-      <p class="info-text"><svg class="small-icon light-blue" viewBox="0 0 24 24"><path fill="currentColor" d="M13 9h-2V3H9v2l-1.65 1.65A2 2 0 0 0 6 6v6h2v7h4V12h2V9z"/></svg> Providing accurate details helps us give you the best possible information.</p>
+      <button class="submit-btn" @click="generateJson">Get Diagnosis</button>
     </div>
   </div>
 </template>
 
-<script>
-import { ref } from 'vue';
+<script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { predictionStore } from '@/store/prediction'
 
-export default {
-  name: 'SymptomInput',
-  setup() {
-    const inputText = ref('');
-    const symptomInput = ref(null);
+const inputText = ref('')
+const router = useRouter()
 
-    const focusInput = () => {
-      if (symptomInput.value) {
-        symptomInput.value.focus();
-      }
-    };
-
-    return {
-      inputText,
-      symptomInput,
-      focusInput,
-    };
-  },
-  emits: ['results'], 
-  methods: {
-    getInputValue() {
-      return this.inputText;
-    },
-    async generateJson() {
+async function generateJson() {
+  if (!inputText.value.trim()) return
   try {
     const response = await fetch('http://127.0.0.1:5000/api/predict', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_input: [ this.inputText ] })
-    });
-
+      body: JSON.stringify({ user_input: [inputText.value] })
+    })
     if (!response.ok) {
-      console.error('Error status:', response.status);
-      return;
+      console.error('Error status:', response.status)
+      return
     }
-
-    // 正确地声明并赋值
-    const result = await response.json();
-    console.log('Prediction Result:', result);
-
-    // 发出 results 事件，把后端返回的 result 传给父组件
-    this.$emit('results', result);
-
+    const result = await response.json()
+    predictionStore.results.value = result
+    router.push({ name: 'Results' })
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error('Fetch error:', err)
   }
-},
-  },
-};
+}
 </script>
 
 <style scoped>
-.symptom-input-container {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+.input-page {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+  font-family: 'Inter', sans-serif;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 50px;
-  background-color: #f9faff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-  font-family: 'Open Sans', sans-serif;
-  width: 90%;
-  max-width: 700px;
-  margin: 20px auto;
 }
 
-.professional {
-  /* 保持专业样式 */
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 0.5rem;
 }
 
-.prompt-card {
-  background-color: #fff;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  margin-bottom: 30px;
-  text-align: center;
-}
-
-.elevated {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-
-.icon {
-  width: 40px;
-  height: 40px;
-  margin-bottom: 15px;
-}
-
-.info-icon {
-  color: #64b5f6;
-}
-
-.prompt-title {
-  font-size: 24px;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: 12px;
-}
-
-.primary-text {
-  color: #2c3e50;
-}
-
-.prompt-description {
-  font-size: 16px;
-  line-height: 1.6;
-  color: #7f8c8d;
-  margin-bottom: 0;
-}
-
-.secondary-text {
-  color: #546e7a;
-}
-
-.input-box {
-  position: relative;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  cursor: text;
-  width: 100%;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  margin-bottom: 25px; /* 为按钮留出空间 */
-}
-
-.focused-style:hover {
-  border-color: #9ecae6;
-}
-
-.focused-style:focus-within {
-  border-color: #64b5f6;
-  box-shadow: 0 0 0 0.2rem rgba(100, 181, 246, 0.25);
+.subtitle {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #666;
+  margin-bottom: 1rem;
 }
 
 textarea {
-  width: 100%;
-  min-height: 180px;
-  padding: 20px;
-  border: none;
-  outline: none;
-  box-sizing: border-box;
-  font-size: 17px;
-  color: #34495e;
-  line-height: 1.7;
+  width: 80%;
+  max-width: 800px;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  font-size: 1rem;
   resize: vertical;
-  background-color: transparent;
-}
-
-textarea::placeholder {
-  color: #95a5a6;
-}
-
-.input-label {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 17px;
-  color: #95a5a6;
-  pointer-events: none;
-  transition: all 0.2s ease-in-out;
-}
-
-.input-label.has-text {
-  top: 8px;
-  left: 12px;
-  font-size: 12px;
-  color: #7f8c8d;
-  background-color: white;
-  padding: 0 5px;
-}
-
-.hint-area {
-  margin-top: 15px;
-  text-align: center;
-  color: #7f8c8d;
-}
-
-.hint-text {
-  font-size: 14px;
-  font-style: italic;
-}
-
-.subtle {
-  color: #95a5a6;
-}
-
-.submit-button {
-  background-color: #64b5f6; /* 亮蓝色按钮 */
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  margin-bottom: 1.5rem;
   outline: none;
+  transition: border-color 0.3s;
 }
 
-.submit-button:hover {
-  background-color: #42a5f5;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+textarea:focus {
+  border-color: #6B73FF;
 }
 
-.submit-button:active {
-  background-color: #1e88e5;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+.submit-btn {
+  width: 200px;
+  padding: 0.75rem;
+  background: #6B73FF;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-.primary-button {
-  /* 可以根据主题调整按钮颜色 */
-}
-
-.additional-info {
-  margin-top: 30px;
-  text-align: center;
-  color: #7f8c8d;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.small-icon {
-  width: 16px;
-  height: 16px;
-  margin-right: 5px;
-}
-
-.light-blue {
-  fill: #64b5f6;
-}
-
-.info-text {
-  margin-bottom: 0;
+.submit-btn:hover {
+  background: #000DFF;
 }
 </style>
