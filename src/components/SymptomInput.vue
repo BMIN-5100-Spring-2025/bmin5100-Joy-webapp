@@ -2,10 +2,10 @@
   <div class="input-page">
     <div class="card">
       <h1 class="title">Diesease Predictor</h1>
-      <p class="subtitle">Describe your symptoms below</p>
+      <p class="subtitle">Describe your symptoms below in natural language.</p>
       <textarea
         v-model="inputText"
-        placeholder="e.g. Fever, cough, headache..."
+        placeholder="e.g. I have a bad headache and fever."
         rows="5"
       ></textarea>
       <button class="submit-btn" @click="generateJson">Get Diagnosis</button>
