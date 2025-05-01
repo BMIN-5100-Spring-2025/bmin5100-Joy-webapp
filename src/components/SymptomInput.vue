@@ -16,7 +16,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { predictionStore } from '@/store/prediction'
+import { predictionStore } from '@/stores/prediction'
 
 const inputText = ref('')
 const router = useRouter()
